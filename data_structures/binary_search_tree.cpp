@@ -6,6 +6,7 @@
  * \warning This program is a poor implementation - C style - and does not
  * utilize any of the C++ STL features.
  */
+// 存在某些bug，没有调通或者说有些地方没有弄懂
 #include <iostream>
 
 struct node {
@@ -15,16 +16,16 @@ struct node {
 };
 
 struct Queue {
-    node *t[100];
+    node *t[100]; // t是个数组，数组里面存放指向node的指针，所以t其实是个二级指针
     int front;
     int rear;
 };
 
 Queue queue;
 
-void enqueue(node *n) { queue.t[queue.rear++] = n; }
+void enqueue(node *n) { queue.t[queue.rear++] = n; } // 入队
 
-node *dequeue() { return (queue.t[queue.front++]); }
+node *dequeue() { return (queue.t[queue.front++]); } // 出队
 
 void Insert(node *n, int x) {
     if (x < n->val) {
@@ -33,9 +34,9 @@ void Insert(node *n, int x) {
             temp->val = x;
             temp->left = NULL;
             temp->right = NULL;
-            n->left = temp;
+            n->left = temp; 
         } else {
-            Insert(n->left, x);
+            Insert(n->left, x); // 递归插入
         }
     } else {
         if (n->right == NULL) {
@@ -50,6 +51,7 @@ void Insert(node *n, int x) {
     }
 }
 
+// 最右边就是最大值
 int findMaxInLeftST(node *n) {
     while (n->right != NULL) {
         n = n->right;
@@ -57,7 +59,9 @@ int findMaxInLeftST(node *n) {
     return n->val;
 }
 
+// 删除某个节点，p其实是父节点 但还是没看懂
 void Remove(node *p, node *n, int x) {
+    // 如果找到了该节点
     if (n->val == x) {
         if (n->right == NULL && n->left == NULL) {
             if (x < p->val) {
@@ -89,6 +93,7 @@ void Remove(node *p, node *n, int x) {
     }
 }
 
+// 宽度优先搜索
 void BFT(node *n) {
     if (n != NULL) {
         std::cout << n->val << "  ";
@@ -98,6 +103,7 @@ void BFT(node *n) {
     }
 }
 
+// 前序遍历
 void Pre(node *n) {
     if (n != NULL) {
         std::cout << n->val << "  ";
@@ -106,6 +112,7 @@ void Pre(node *n) {
     }
 }
 
+// 中序遍历
 void In(node *n) {
     if (n != NULL) {
         In(n->left);
@@ -114,6 +121,7 @@ void In(node *n) {
     }
 }
 
+// 后序遍历
 void Post(node *n) {
     if (n != NULL) {
         Post(n->left);
