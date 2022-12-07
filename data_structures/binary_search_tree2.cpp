@@ -50,14 +50,15 @@ class binary_search_tree {
      * @return true If the maximum value was successfully found.
      * @return false Otherwise.
      */
+    // 因为节点是unique_ptr，所以传指针的引用
     bool find_max(std::unique_ptr<bst_node>& node, T& ret_value) {
         if (!node) {
             return false;
-        } else if (!node->right) {
-            ret_value = node->value;
+        } else if (!node->right) { // 如果右为空，返回当前节点值
+            ret_value = node->value; // 其实ret_value只是用来存值的
             return true;
         }
-        return find_max(node->right, ret_value);
+        return find_max(node->right, ret_value); // 递归
     }
 
     /**
@@ -88,16 +89,16 @@ class binary_search_tree {
      * @return false Otherwise.
      */
     bool insert(std::unique_ptr<bst_node>& node, T new_value) {
-        if (root_ == node && !root_) {
+        if (root_ == node && !root_) { // 如果根节点为空
             root_ = std::unique_ptr<bst_node>(new bst_node(new_value));
             return true;
         }
 
         if (new_value < node->value) {
-            if (!node->left) {
+            if (!node->left) { // 如果左子树为空
                 node->left = std::unique_ptr<bst_node>(new bst_node(new_value));
                 return true;
-            } else {
+            } else { // 递归的过程
                 return insert(node->left, new_value);
             }
         } else if (new_value > node->value) {
@@ -108,7 +109,7 @@ class binary_search_tree {
             } else {
                 return insert(node->right, new_value);
             }
-        } else {
+        } else { // 如果节点值相同就return false
             return false;
         }
     }
@@ -128,39 +129,38 @@ class binary_search_tree {
             return false;
         }
 
-        if (node->value == rm_value) {
+        if (node->value == rm_value) { // 查找到值
             if (node->left && node->right) {
-                T successor_node_value{};
-                find_max(node->left, successor_node_value);
-                remove(root_, root_, successor_node_value);
-                node->value = successor_node_value;
+                T successor_node_value{}; // 这里是大括号初始化
+                find_max(node->left, successor_node_value); // 找到左子树最大值
+                remove(root_, root_, successor_node_value); // 移除左子树最大值的这个节点
+                node->value = successor_node_value; // 把 = rm_value节点的值设为successor_node_value
                 return true;
-            } else if (node->left || node->right) {
-                std::unique_ptr<bst_node>& non_null =
+            } else if (node->left || node->right) { // 如果只有一个子节点
+                std::unique_ptr<bst_node>& non_null = // 这里也是对指针的引用
                     (node->left ? node->left : node->right);
 
                 if (node == root_) {
-                    root_ = std::move(non_null);
+                    root_ = std::move(non_null); // std::move()将左值转换成右值,等价于root_(non_null.release())
                 } else if (rm_value < parent->value) {
-                    parent->left = std::move(non_null);
+                    parent->left = std::move(non_null); // std::move是常见的转移unique_ptr控制权的方法，因为unique_ptr不支持 operator =
                 } else {
                     parent->right = std::move(non_null);
                 }
 
                 return true;
-            } else {
+            } else { // 当前节点为子节点
                 if (node == root_) {
-                    root_.reset(nullptr);
+                    root_.reset(nullptr); // 其实root_.reset()会自动把root_设为nullptr
                 } else if (rm_value < parent->value) {
-                    parent->left.reset(nullptr);
+                    parent->left.reset(nullptr); // 释放左节点
                 } else {
                     parent->right.reset(nullptr);
                 }
-
                 return true;
             }
         } else if (rm_value < node->value) {
-            return remove(node, node->left, rm_value);
+            return remove(node, node->left, rm_value); // 递归删除
         } else {
             return remove(node, node->right, rm_value);
         }
@@ -174,6 +174,7 @@ class binary_search_tree {
      * @return true If the value was found in the BST.
      * @return false Otherwise.
      */
+    // 查找值是否在树里
     bool contains(std::unique_ptr<bst_node>& node, T value) {
         if (!node) {
             return false;
@@ -244,6 +245,7 @@ class binary_search_tree {
      * @brief Construct a new Binary Search Tree object.
      *
      */
+    // 构造函数
     binary_search_tree() {
         root_ = nullptr;
         size_ = 0;
@@ -256,6 +258,7 @@ class binary_search_tree {
      * @return true If the insertion was successful.
      * @return false Otherwise.
      */
+    // public借口
     bool insert(T new_value) {
         bool result = insert(root_, new_value);
         if (result) {
@@ -271,6 +274,7 @@ class binary_search_tree {
      * @return true If the removal was successful.
      * @return false Otherwise.
      */
+    // public接口
     bool remove(T rm_value) {
         bool result = remove(root_, root_, rm_value);
         if (result) {
@@ -320,9 +324,9 @@ class binary_search_tree {
      */
     std::vector<T> get_elements_inorder() {
         std::vector<T> result;
-        traverse_inorder([&](T node_value) { result.push_back(node_value); },
+        traverse_inorder([&](T node_value) { result.push_back(node_value); }, // 需要用引用捕获，因为unique_ptr指针
                          root_);
-        return result;
+        return result; // 返回装有value的vector容器
     }
 
     /**

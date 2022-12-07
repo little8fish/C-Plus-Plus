@@ -6,7 +6,7 @@
  * \warning This program is a poor implementation - C style - and does not
  * utilize any of the C++ STL features.
  */
-// 存在某些bug，没有调通或者说有些地方没有弄懂
+// 存在某些bug，没有调通或者说有些地方没有弄懂，有错误
 #include <iostream>
 
 struct node {
@@ -23,7 +23,11 @@ struct Queue {
 
 Queue queue;
 
-void enqueue(node *n) { queue.t[queue.rear++] = n; } // 入队
+// 要加判断，如果当前n为空，那么不入队
+void enqueue(node *n) { 
+    if (!n) return;
+    queue.t[queue.rear++] = n; 
+} // 入队
 
 node *dequeue() { return (queue.t[queue.front++]); } // 出队
 
@@ -65,26 +69,26 @@ void Remove(node *p, node *n, int x) {
     if (n->val == x) {
         if (n->right == NULL && n->left == NULL) {
             if (x < p->val) {
-                p->right = NULL;
-            } else {
                 p->left = NULL;
-            }
-        } else if (n->right == NULL) {
-            if (x < p->val) {
-                p->right = n->left;
             } else {
+                p->right = NULL;
+            }
+        } else if (n->right == NULL) { // 该节点只有左子节点
+            if (x < p->val) { // 如果该节点是父节点的左子结点
                 p->left = n->left;
-            }
-        } else if (n->left == NULL) {
-            if (x < p->val) {
-                p->right = n->right;
             } else {
-                p->left = n->right;
+                p->right = n->left;
             }
-        } else {
-            int y = findMaxInLeftST(n->left);
-            n->val = y;
-            Remove(n, n->right, y);
+        } else if (n->left == NULL) { // 该节点只有右子节点
+            if (x < p->val) {
+                p->left = n->right;
+            } else {
+                p->right = n->right;
+            }
+        } else { // 如果左右子节点都存在
+            int y = findMaxInLeftST(n->left); // 找到左子树的最大值
+            n->val = y; // 将当前节点的值更新为左子树最大值
+            Remove(n, n->right, y); // 删除左子树最大值的节点
         }
     } else if (x < n->val) {
         Remove(n, n->left, x);
